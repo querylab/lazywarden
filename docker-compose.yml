@@ -1,0 +1,14 @@
+version: "3.3"
+services:
+  lazywarden:
+    container_name: lazywarden_backup
+    hostname: lazywarden_backup
+    build: .
+    env_file:
+      - .env
+    environment:
+      UNLOCK_VAULT: "true"
+    volumes:
+      - /root/lazywarden/config:/config
+      - /root/lazywarden/backup-drive:/root/lazywarden/backup-drive/
+    restart: unless-stopped

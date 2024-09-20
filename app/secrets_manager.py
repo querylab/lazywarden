@@ -1,0 +1,60 @@
+"""
+secrets_manager.py
+
+This module retrieves secrets from Bitwarden.
+"""
+
+from bitwarden_client import get_secret
+from imports import logging
+
+def retrieve_secrets(bw_client):
+    """
+    Retrieves secrets from Bitwarden.
+
+    Args:
+        bw_client (BitwardenClient): Bitwarden client instance.
+
+    Returns:
+        dict: Dictionary of secrets.
+
+    Raises:
+        ValueError: If one or more secrets cannot be retrieved.
+    """
+    secret_ids = {
+        
+    "BW_URL": "00000000-0000-0000-0000-000000000000",
+    "BW_USERNAME": "00000000-0000-0000-0000-000000000000",
+    "BW_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "BW_TOTP_SECRET": "00000000-0000-0000-0000-000000000000",
+    "ENCRYPTION_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "ZIP_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "ZIP_ATTACHMENT_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "PCLOUD_USERNAME": "00000000-0000-0000-0000-000000000000",
+    "PCLOUD_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "MEGA_EMAIL": "00000000-0000-0000-0000-000000000000",
+    "MEGA_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "DROPBOX_ACCESS_TOKEN": "00000000-0000-0000-0000-000000000000",
+    "DROPBOX_REFRESH_TOKEN": "00000000-0000-0000-0000-000000000000",
+    "DROPBOX_APP_KEY": "00000000-0000-0000-0000-000000000000",
+    "DROPBOX_APP_SECRET": "00000000-0000-0000-0000-000000000000",
+    "TODOIST_TOKEN": "00000000-0000-0000-0000-000000000000",
+    "CALDAV_URL": "00000000-0000-0000-0000-000000000000",
+    "CALDAV_USERNAME": "00000000-0000-0000-0000-000000000000",
+    "CALDAV_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "NEXTCLOUD_URL": "00000000-0000-0000-0000-000000000000",
+    "NEXTCLOUD_USERNAME": "00000000-0000-0000-0000-000000000000",
+    "NEXTCLOUD_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "SEAFILE_SERVER_URL": "00000000-0000-0000-0000-000000000000",
+    "SEAFILE_USERNAME": "00000000-0000-0000-0000-000000000000",
+    "SEAFILE_PASSWORD": "00000000-0000-0000-0000-000000000000",
+    "FILEBASE_ACCESS_KEY": "00000000-0000-0000-0000-000000000000",
+    "FILEBASE_SECRET_KEY": "00000000-0000-0000-0000-000000000000",
+    "KEEPASS_PASSWORD": "00000000-0000-0000-0000-000000000000"
+
+    }
+    secrets = {}
+    for key, secret_id in secret_ids.items():
+        secrets[key] = get_secret(bw_client, secret_id)
+    if not all(secrets.values()):
+        raise ValueError("One or more secrets could not be retrieved from Bitwarden. Check the secret IDs and your Bitwarden configuration.")
+    return secrets
