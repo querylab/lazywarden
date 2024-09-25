@@ -636,7 +636,6 @@ The Docker container will run the `main.py` script every 24 hours to back up Bit
 
 ``` YAML
 
-version: "3.3"
 services:
   lazywarden:
     container_name: lazywarden_backup
