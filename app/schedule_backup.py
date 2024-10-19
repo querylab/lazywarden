@@ -466,6 +466,170 @@ def create_todoist_task(todoist_token, project_id, task_name, due_datetime):
         logging.error(f"{Fore.RED}Error creating Todoist task: {e}{Fore.RESET}")
         raise
 
+#---------------------------------- Vikunja To-do ---------------------------------------------------
+
+def send_request(method, url, headers, data=None):
+    try:
+        if method == "POST":
+            response = requests.post(url, headers=headers, json=data)
+        elif method == "PUT":
+            response = requests.put(url, headers=headers, json=data)
+        elif method == "GET":
+            response = requests.get(url, headers=headers)
+        else:
+            raise ValueError("Unsupported HTTP method")
+
+        response.raise_for_status()  # Verificar si la solicitud fue exitosa
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error during request to Vikunja: {e}")
+        if e.response:
+            logging.error(f"Response error: {e.response.text}")
+        return None
+
+# Función para agregar un label a una tarea en Vikunja
+def add_label_to_task(secrets, task_id, label_id):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+    
+    label_data = {
+        "label_id": label_id
+    }
+
+    label_url = f'{secrets["VIKUNJA_URL"]}/tasks/{task_id}/labels'
+    
+    response = send_request("PUT", label_url, headers, label_data)
+
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info(f"Label ID {label_id} successfully added to task ID {task_id}.")
+    else:
+        logging.error(f"Error adding label to task: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+
+# Función para crear un label en Vikunja
+def create_label_in_vikunja(secrets, label_title="Scheduled Bitwarden Backup"):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+    
+    label_data = {
+        "title": label_title,
+        "description": "The performed backup is handled by Lazywarden",
+        "hex_color": "#C7253E"
+    }
+
+    label_url = f'{secrets["VIKUNJA_URL"]}/labels'
+    response = send_request("PUT", label_url, headers, label_data)
+
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info(f"Label '{label_title}' successfully created.")
+        return response.json().get("id")
+    else:
+        logging.error(f"Error creating label: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+        return None
+
+# Función para obtener el ID de un label existente por título
+def get_existing_label_id(secrets, label_title="Scheduled Bitwarden Backup"):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+
+    labels_url = f'{secrets["VIKUNJA_URL"]}/labels'
+    response = send_request("GET", labels_url, headers)
+
+    if response and response.status_code == 200:
+        labels = response.json()
+        for label in labels:
+            if label["title"] == label_title:
+                logging.info(f"Label '{label_title}' already exists.")
+                return label["id"]
+        return None
+    else:
+        logging.error("Failed to retrieve labels from Vikunja.")
+        return None
+
+# Función para crear una tarea en Vikunja
+def create_task_in_project(secrets, project_id, task_name):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+
+    now = arrow.utcnow().to(TIMEZONE)
+    timestamp_24h = now.format("YYYY-MM-DD HH:mm:ss")
+    task_name = f"Scheduled Start in: {timestamp_24h}"
+    
+    task_data = {
+        "title": task_name,
+        "description": "The performed backup is handled by Lazywarden",
+        "due_date":  "2024-12-31T23:59:59Z",  
+        "priority": 3,
+        "hex_color": "#C7253E",
+        "is_done": False,
+        "is_archived": False
+    }
+
+    task_url = f'{secrets["VIKUNJA_URL"]}/projects/{project_id}/tasks'
+    response = send_request("PUT", task_url, headers, task_data)
+
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info("Task successfully created in the project.")
+        return response.json()
+    else:
+        logging.error(f"Error creating task: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+        return None
+
+# Función para crear un proyecto en Vikunja
+def create_project_with_put(secrets, project_title="Scheduled Bitwarden Backup"):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+
+    project_data = {
+        "title": project_title,
+        "description": "The performed backup is handled by Lazywarden",
+        "hex_color": "#C7253E",
+        "is_favorite": True,
+        "is_archived": False
+    }
+
+    project_url = f'{secrets["VIKUNJA_URL"]}/projects'
+    response = send_request("PUT", project_url, headers, project_data)
+    
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info(f"Project '{project_title}' successfully created.")
+        return response.json()["id"]
+    else:
+        logging.error(f"Error creating project: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+        return None
+
+# Función para verificar si un proyecto ya existe
+def get_existing_project_id(secrets, project_title):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+
+    project_url = f'{secrets["VIKUNJA_URL"]}/projects'
+    response = send_request("GET", project_url, headers)
+
+    if response and response.status_code == 200:
+        projects = response.json()
+        for project in projects:
+            if project["title"] == project_title:
+                logging.info(f"Project '{project_title}' already exists.")
+                return project["id"]
+        return None
+    else:
+        logging.error("Failed to retrieve projects from Vikunja.")
+        return None
+
+
+#--------------------------------------------------------------------------------------------------
 
 
 def main():
@@ -558,7 +722,54 @@ def main():
         print(f"{Fore.YELLOW}Email notification is not configured. Email notification will be skipped.{Fore.RESET}")
 
   
+#---------------------------------------------------------------------------------------------------------------------------------
+ ### Integración con Vikunja ###
+    # Verificar si los secretos de Vikunja están disponibles
+    vikunja_token = secrets.get("VIKUNJA_API_TOKEN")
+    vikunja_url = secrets.get("VIKUNJA_URL")
 
+    if vikunja_token and vikunja_url:
+        try:
+            vikunja_secrets = {
+                "VIKUNJA_API_TOKEN": vikunja_token,
+                "VIKUNJA_URL": vikunja_url
+            }
+
+            # Crear o verificar el proyecto en Vikunja
+            project_title = "Scheduled Bitwarden Backup"
+            project_id = get_existing_project_id(vikunja_secrets, project_title)
+
+            if not project_id:
+                logging.info(f"Project '{project_title}' does not exist. Creating it.")
+                project_id = create_project_with_put(vikunja_secrets, project_title)
+
+            if project_id:
+                # Crear la tarea en Vikunja
+                task_name = f"Scheduled Bitwarden Backup {scheduled_time.strftime('%Y-%m-%d %H:%M:%S')}"
+                task_data = create_task_in_project(vikunja_secrets, project_id, task_name)
+
+                if task_data and "id" in task_data:
+                    task_id = task_data["id"]
+                    logging.info(f"Task created successfully with ID {task_id}.")
+
+                    # Verificar si existe el label o crearlo
+                    label_title = "Scheduled Bitwarden Backup"
+                    label_id = get_existing_label_id(vikunja_secrets, label_title)
+
+                    if not label_id:
+                        label_id = create_label_in_vikunja(vikunja_secrets, label_title)
+
+                    # Agregar el label a la tarea
+                    if label_id:
+                        add_label_to_task(vikunja_secrets, task_id, label_id)
+        except Exception as e:
+            logging.error(f"{Fore.RED}Error occurred while creating project or task in Vikunja: {e}{Fore.RESET}")
+    else:
+        logging.warning(f"{Fore.YELLOW}Vikunja is not configured. Task creation in Vikunja will be skipped.{Fore.RESET}")
+        print(f"{Fore.YELLOW}Vikunja is not configured. Task creation in Vikunja will be skipped.{Fore.RESET}")
+
+#---------------------------------------------------------------------------------------------------------------------------------
+  
 
 if __name__ == "__main__":
     

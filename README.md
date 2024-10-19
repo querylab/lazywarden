@@ -13,12 +13,12 @@ Lazywarden is a Python automation tool designed to Backup and Restore data from 
 - 🔒 **Maximum Security:** Data protection with AES-256 encryption and Argon2 key derivation.
 - 🔄 **Automated Backups and Imports:** Keep your Bitwarden vault up to date and secure.
 - ✅ **Integrity Verification:** SHA-256 hash to ensure data integrity on every backup.
-- ☁️ **Multi-Cloud Support:** Store backups to services such as Dropbox, Google Drive, pCloud, MEGA, NextCloud, Seafile, Filebase (IPFS) and via SMTP.
+- ☁️ **Multi-Cloud Support:** Store backups to services such as Dropbox, Google Drive, pCloud, MEGA, NextCloud, Seafile, Storj, Cloudflare R2, Filebase (IPFS) and via SMTP.
 - 🖥️ **Local Storage:** Save backups to a local path for greater control.
 - 🔔 **Real-Time Alerts:** Instant notifications on Discord, Telegram and Slack.
-- 🗓️ **Schedule Management:** Integration with Todoist and CalDAV to manage your schedule.
+- 🗓️ **Schedule Management:** Integration with CalDAV, Todoist and Vikunja to manage your schedule.
 - 🐳 **Easy Deployment:** Quick setup with Docker Compose.
-- 🤖 **Full Automation and Custom Scheduling:** Automatic backups with flexible scheduling options (daily, weekly, monthly, yearly). Integration with CalDAV and Todoist for complete tracking and email notifications.
+- 🤖 **Full Automation and Custom Scheduling:** Automatic backups with flexible scheduling options (daily, weekly, monthly, yearly). Integration with CalDAV, Todoist and Vikunja for complete tracking and email notifications.
 - 🔑 **Bitwarden Export to KeePass:** Export Bitwarden items to a KeePass database (kdbx), including TOTP-seeded logins, URI, custom fields, card, identity attachments and secure notes.
 
 ## <span style="display: inline-flex; align-items: center;"><img src="https://media.tenor.com/-AyTtMgs2mMAAAAi/nyan-cat-nyan.gif" width="60" style="vertical-align: middle; margin-right: 10px;"> Platform Compatibility</span>
@@ -32,6 +32,7 @@ Lazywarden is a Python automation tool designed to Backup and Restore data from 
     <a href="https://imgur.com/aa100eH"><img src="https://i.imgur.com/aa100eH.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/Grlq9aN"><img src="https://i.imgur.com/Grlq9aN.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/UYGpfR8"><img src="https://i.imgur.com/UYGpfR8.png" title="source: imgur.com" width="30"/></a>
+    <a href="https://imgur.com/SVshyRn"><img src="https://imgur.com/SVshyRn.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/G37MsuK"><img src="https://i.imgur.com/G37MsuK.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/XpWPF0w"><img src="https://i.imgur.com/XpWPF0w.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/YMGE85n"><img src="https://i.imgur.com/YMGE85n.png" title="source: imgur.com" width="30"/></a>
@@ -39,9 +40,9 @@ Lazywarden is a Python automation tool designed to Backup and Restore data from 
     <a href="https://imgur.com/hjuaEcF"><img src="https://i.imgur.com/hjuaEcF.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/BhI5DBR"><img src="https://imgur.com/BhI5DBR.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/krgaizW"><img src="https://imgur.com/krgaizW.png" title="source: imgur.com" width="30"/></a>
-    <a href="https://imgur.com/QAawp1J"><img src="https://imgur.com/QAawp1J.png" title="source: imgur.com" width="30"/></a>
     <a href="https://imgur.com/hRwMM9n"><img src="https://imgur.com/hRwMM9n.png" title="source: imgur.com" width="30"/></a>
-    </a>
+    <a href="https://imgur.com/zdTnwat"><img src="https://imgur.com/zdTnwat.png" title="source: imgur.com" width="30"/></a>
+    <a href="https://imgur.com/i1hBmAD"><img src="https://imgur.com/i1hBmAD.png" title="source: imgur.com" width="30"/></a>
 
 ## <span style="display: inline-flex; align-items: center;"><img src="https://user-images.githubusercontent.com/74038190/212257472-08e52665-c503-4bd9-aa20-f5a4dae769b5.gif" width="36" style="vertical-align: middle; margin-right: 10px;"> Demo Backup</span>
 
@@ -134,27 +135,104 @@ Lazywarden is a Python automation tool designed to Backup and Restore data from 
 - Create a `.env` file based on the on this `.env.sample` example file and fill in the necessary variables.
 
 ``` BASH
+# Bitwarden Secrets
+BW_URL=80607bef-1153-4eb6-1111-b1a0013ebdd1
+BW_USERNAME=c6a5fc4d-6d36-1111-820a-a1dae99e2f43
+BW_PASSWORD=0de9c3be-253d-1111-be10-de0607329ffa
+BW_TOTP_SECRET=01726d37-0df7-1111-a78d-96fdc8efd59b
+ENCRYPTION_PASSWORD=588b0643-1111-4a78-ba3e-9467ad9c81a7
+ZIP_PASSWORD=3bcadf27-446d-47f0-1111-b1469fa58546
+ZIP_ATTACHMENT_PASSWORD=89d458e7-9ac4-1111-9f23-95cb4b8cff86
+
+# pCloud Credentials
+PCLOUD_USERNAME=8d5f981b-705a-1111-a25d-a2abe925f4e4
+PCLOUD_PASSWORD=23351280-0184-1111-99b0-2b6a1bc921ae
+
+# Mega Credentials
+MEGA_EMAIL=1dafc95a-63c2-4b66-1111-bd7cd5a2ea5e
+MEGA_PASSWORD=51bec27b-7c79-1111-9cef-1be72675a47f
+
+# Dropbox Credentials
+DROPBOX_ACCESS_TOKEN=647ff022-1111-47d9-a54f-fef635b23eff
+DROPBOX_REFRESH_TOKEN=873e5430-1111-4d62-8bf2-acce1e915a9d
+DROPBOX_APP_KEY=81f259ae-d6e4-47b1-1111-6bec568ddc85
+DROPBOX_APP_SECRET=0b407a02-ded5-1111-b953-caf8fc79af99
+
+# Todoist Credentials
+TODOIST_TOKEN=667321ac-2229-42a1-1111-3c568c9d73e6
+
+# CalDAV Credentials
+CALDAV_URL=049c9267-bdb0-4266-1111-b19a00e9b626
+CALDAV_USERNAME=6eff84c9-fbeb-1111-ad30-b19a00e9cc09
+CALDAV_PASSWORD=492c37fd-46df-1111-abe7-b19a00e9e601
+
+# Nextcloud Credentials
+NEXTCLOUD_URL=e375df76-d3b2-1111-83ba-b19a0158fe08
+# Example http://192.175.88.112:8400
+NEXTCLOUD_USERNAME=a267c8cd-9d13-1111-8729-b19a0159276a
+NEXTCLOUD_PASSWORD=7036175d-046b-1111-9797-b19a01594308
+
+# Seafile Credentials
+SEAFILE_SERVER_URL=20060dfc-4fa0-1111-8b41-b19b000857e7 
+# Example http://192.175.88.212:8200
+SEAFILE_USERNAME=9959dabb-ae4c-1111-9fc1-b19b00087d64
+SEAFILE_PASSWORD=94e5f170-aedb-1111-b1b9-b19b00088ccd
+
+# Filebase Credentials
+FILEBASE_ACCESS_KEY=53ec784f-4b18-1111-9a47-b1a00136efc5
+FILEBASE_SECRET_KEY=f99d8d83-57b9-1111-9ace-b1a001370117
+
+# KeePass Password
+KEEPASS_PASSWORD=95512b36-32e9-1111-9c15-b1ae0171b2f9
+
+# Storj Credentials
+STORJ_ACCESS_KEY=a7d85af3-ad63-1111-b039-b208012c381a
+STORJ_SECRET_KEY=1303faf7-b34e-1111-ac43-b208012c4f05
+STORJ_ENDPOINT=fb787806-a3f4-1111-8523-b208012c6543
+
+# R2 Credentials
+R2_ACCESS_KEY_ID=ffb0d6ed-1111-46ad-8fdf-b2080132c9dd
+R2_SECRET_ACCESS_KEY=083b5344-1111-4dd8-909e-b2080132dc52
+R2_ENDPOINT_URL=31510979-b5b1-1111-8957-b2080132f436
+
+# Vikunja Credentials
+VIKUNJA_API_TOKEN=7e67437c-1489-1111-8fbb-b20801880db2
+VIKUNJA_URL=d3b7a73f-ebb9-1111-8dc2-b208018843a6 
+#Example for Bitwarden Secret Manager http://192.175.88.227:3456/api/v1
+
+# Google Drive Settings
 GOOGLE_SERVICE_ACCOUNT_FILE=/root/lazywarden/config/bitwarden-drive-backup-google.json
-GOOGLE_FOLDER_ID=1oWWis8QR3VTz5qRA3W4YTtO0LjvXFvoB
+GOOGLE_FOLDER_ID=1oWWis81111Tz5qRA3W4YTtO0LjvXFvoA
+
+# Backup Settings
 BACKUP_DIR=/root/lazywarden/backup-drive/
+CRON_SCHEDULE="0 0 23 * *"
+TIMEZONE=America/New_York
+TIMESTAMP=2024_10_18_22_47_46
+
+# API URLs for Bitwarden
+API_URL=https://vault.bitwarden.com/api
+IDENTITY_URL=https://vault.bitwarden.com/identity
+
+# Organization ID
+ORGANIZATION_ID=232c1890-1111-40b4-b769-b195012f78af
+
+# Access Token for Bitwarden Authentication
+ACCESS_TOKEN=0.34827757-1111-1111-1111-b20a01647f46.WDp3AUjnle1LqlXvs0Ox9xEWzgY8Hp:CKue3vgWTvIQzEmDlBlqGw==
+
+# Notifications and Alerts
 TELEGRAM_TOKEN=
 TELEGRAM_CHAT_ID=
 DISCORD_WEBHOOK_URL=
 SLACK_WEBHOOK_URL=
+
+# SMTP Configuration for Email Notifications
 SMTP_SERVER=mail.smtp2go.com
 SMTP_PORT=8025
 SMTP_USERNAME=
 SMTP_PASSWORD=
 EMAIL_RECIPIENT=
 SENDER_EMAIL=
-API_URL=https://vault.bitwarden.com/api   # No Modify No Touch
-IDENTITY_URL=https://vault.bitwarden.com/identity   # No Modify No Touch
-ORGANIZATION_ID=232c1123-78f9-4124-b769-b195122f78bf
-ACCESS_TOKEN=0.3a22t111a-c111-1111-8fa2-b1c12341236a.1QTvdFZ12333ZEVSGM8azrOns7Wux:H+5prum123OQb28123KvUw==  # Access Token from Bitwarden Secrets Manager Ubuntu-Lazywarden Machine
-CRON_SCHEDULE="0 0 23 * *" #Cron Every 24 hours for Docker 
-TIMEZONE=America/New_York
-TIMESTAMP=2024_09_18_19_45_40 # To decrypt all zip files in your backup or import them, just use the timestamp that was generated in the backup. For example, use the files that are generated in the backup like this: bw-backup_2024_09_18_19_45_40.zip.
-
 ```
 
 ### <img src="https://raw.githubusercontent.com/querylab/svg/main/ubuntu.gif" width="20" style="vertical-align: middle;"> Ubuntu Configuration
@@ -208,6 +286,12 @@ timedatectl set-timezone America/New_York
 ``` PYTHON
 cd app
 python3 main.py
+```
+
+- In Ubuntu, if you encounter an error when running `main.py`, it may be related to missing or outdated libraries. To fix this, I recommend running the following command to install all the necessary dependencies:
+
+``` PYTHON
+ pip install -r requirements.txt
 ```
 
 ---
@@ -288,6 +372,71 @@ To set up Secret Management in Bitwarden, first create a new organization in you
 
 <a href="https://imgur.com/TFY5Hmu"><img src="https://i.imgur.com/TFY5Hmu.png" title="source: imgur.com" /></a>
 
+- With these secrets added, we can now modify our **.env** file to contain our secrets.
+
+``` PYTHON
+# Bitwarden Secrets
+BW_URL=00000000-0000-0000-0000-000000000000
+BW_USERNAME=00000000-0000-0000-0000-000000000000
+BW_PASSWORD=00000000-0000-0000-0000-000000000000
+BW_TOTP_SECRET=00000000-0000-0000-0000-000000000000
+ENCRYPTION_PASSWORD=00000000-0000-0000-0000-000000000000
+ZIP_PASSWORD=00000000-0000-0000-0000-000000000000
+ZIP_ATTACHMENT_PASSWORD=00000000-0000-0000-0000-000000000000
+
+# pCloud Credentials
+PCLOUD_USERNAME=00000000-0000-0000-0000-000000000000
+PCLOUD_PASSWORD=00000000-0000-0000-0000-000000000000
+
+# Mega Credentials
+MEGA_EMAIL=00000000-0000-0000-0000-000000000000
+MEGA_PASSWORD=00000000-0000-0000-0000-000000000000
+
+# Dropbox Credentials
+DROPBOX_ACCESS_TOKEN=00000000-0000-0000-0000-000000000000
+DROPBOX_REFRESH_TOKEN=00000000-0000-0000-0000-000000000000
+DROPBOX_APP_KEY=00000000-0000-0000-0000-000000000000
+DROPBOX_APP_SECRET=00000000-0000-0000-0000-000000000000
+
+# Todoist Credentials
+TODOIST_TOKEN=00000000-0000-0000-0000-000000000000
+
+# CalDAV Credentials
+CALDAV_URL=00000000-0000-0000-0000-000000000000
+CALDAV_USERNAME=00000000-0000-0000-0000-000000000000
+CALDAV_PASSWORD=00000000-0000-0000-0000-000000000000
+
+# Nextcloud Credentials
+NEXTCLOUD_URL=00000000-0000-0000-0000-000000000000
+NEXTCLOUD_USERNAME=00000000-0000-0000-0000-000000000000
+NEXTCLOUD_PASSWORD=00000000-0000-0000-0000-000000000000
+
+# Seafile Credentials
+SEAFILE_SERVER_URL=00000000-0000-0000-0000-000000000000
+SEAFILE_USERNAME=00000000-0000-0000-0000-000000000000
+SEAFILE_PASSWORD=00000000-0000-0000-0000-000000000000
+
+# Filebase Credentials
+FILEBASE_ACCESS_KEY=00000000-0000-0000-0000-000000000000
+FILEBASE_SECRET_KEY=00000000-0000-0000-0000-000000000000
+
+# KeePass Password
+KEEPASS_PASSWORD=00000000-0000-0000-0000-000000000000
+
+# Storj Credentials
+STORJ_ACCESS_KEY=00000000-0000-0000-0000-000000000000
+STORJ_SECRET_KEY=00000000-0000-0000-0000-000000000000
+STORJ_ENDPOINT=00000000-0000-0000-0000-000000000000
+
+# R2 Credentials
+R2_ACCESS_KEY_ID=00000000-0000-0000-0000-000000000000
+R2_SECRET_ACCESS_KEY=00000000-0000-0000-0000-000000000000
+R2_ENDPOINT_URL=00000000-0000-0000-0000-000000000000
+
+# Vikunja Credentials
+VIKUNJA_API_TOKEN=00000000-0000-0000-0000-000000000000
+VIKUNJA_URL=00000000-0000-0000-0000-000000000000
+```
 
 <a href="https://imgur.com/C8rI6Lc"><img src="https://i.imgur.com/C8rI6Lc.png" title="source: imgur.com" /></a>
 
@@ -332,41 +481,6 @@ To set up Secret Management in Bitwarden, first create a new organization in you
 <a href="https://imgur.com/K1wKCOR"><img src="https://i.imgur.com/K1wKCOR.png" title="source: imgur.com" /></a>
 
 
-- With these secrets added, we can now modify our **secrets_manager.py** file to contain our secrets.
-
-``` PYTHON
-	
-    "BW_URL": "00000000-0000-0000-0000-000000000000",
-    "BW_USERNAME": "00000000-0000-0000-0000-000000000000",
-    "BW_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "BW_TOTP_SECRET": "00000000-0000-0000-0000-000000000000",
-    "ENCRYPTION_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "ZIP_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "ZIP_ATTACHMENT_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "PCLOUD_USERNAME": "00000000-0000-0000-0000-000000000000",
-    "PCLOUD_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "MEGA_EMAIL": "00000000-0000-0000-0000-000000000000",
-    "MEGA_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "DROPBOX_ACCESS_TOKEN": "00000000-0000-0000-0000-000000000000",
-    "DROPBOX_REFRESH_TOKEN": "00000000-0000-0000-0000-000000000000",
-    "DROPBOX_APP_KEY": "00000000-0000-0000-0000-000000000000",
-    "DROPBOX_APP_SECRET": "00000000-0000-0000-0000-000000000000",
-    "TODOIST_TOKEN": "00000000-0000-0000-0000-000000000000",
-    "CALDAV_URL": "00000000-0000-0000-0000-000000000000",
-    "CALDAV_USERNAME": "00000000-0000-0000-0000-000000000000",
-    "CALDAV_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "NEXTCLOUD_URL": "00000000-0000-0000-0000-000000000000",
-    "NEXTCLOUD_USERNAME": "00000000-0000-0000-0000-000000000000",
-    "NEXTCLOUD_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "SEAFILE_SERVER_URL": "00000000-0000-0000-0000-000000000000",
-    "SEAFILE_USERNAME": "00000000-0000-0000-0000-000000000000",
-    "SEAFILE_PASSWORD": "00000000-0000-0000-0000-000000000000",
-    "FILEBASE_ACCESS_KEY": "00000000-0000-0000-0000-000000000000",
-    "FILEBASE_SECRET_KEY": "00000000-0000-0000-0000-000000000000",
-    "KEEPASS_PASSWORD": "00000000-0000-0000-0000-000000000000"
-    
-```
-
 - To find the **ORGANIZATION_ID** variable for our **.env** you can get it by visiting the URL when you are in your organization or by running the following command:
 
 ``` BASH
@@ -399,7 +513,8 @@ ZIP_PASSWORD=ZCGvq@gwS7QhV@&R3k*x*xN72anybyFHW2RWiBTr
 # If Bitwarden Premium is not enabled, the attachment folder will be empty.
 ZIP_ATTACHMENT_PASSWORD=HBLXL9!grer@Uay2edkwTXeZx!E9DxKphNxsNak1knb3dcfx2o   
 
-
+# Contains the encryption password for KeePass Database (Kdbx).
+KEEPASS_PASSWORD=e2zkwTXe21!E9DxKp
 ```
 
 ## <img src="https://raw.githubusercontent.com/querylab/svg/main/dropbox.gif" width="70" style="vertical-align: middle;"> Dropbox API Configuration
@@ -635,22 +750,20 @@ crontab -l
 The Docker container will run the `main.py` script every 24 hours to back up Bitwarden and upload it to the configured cloud services. Notifications will be sent to the specified services in case of success or failure. You can modify the backup frequency according to your needs, such as monthly, daily, or hourly.
 
 ``` YAML
-
 services:
   lazywarden:
-    container_name: lazywarden_backup
-    hostname: lazywarden_backup
-    build: .
+    container_name: lazywarden
+    hostname: lazywarden
+    image: querylab/lazywarden:latest
     env_file:
       - .env
     environment:
       UNLOCK_VAULT: "true"
     volumes:
-      - /root/lazywarden/config:/config
-      - /root/lazywarden/backup-drive:/root/lazywarden/backup-drive
+      - /root/lazywarden/config:/root/lazywarden/config
+      - /root/lazywarden/backup-drive:/root/lazywarden/backup-drive/
+      - /root/lazywarden/.env:/app/.env
     restart: unless-stopped
-
-
 ```
 
 #### Run Docker Compose

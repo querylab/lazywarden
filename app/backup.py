@@ -18,6 +18,8 @@ init(autoreset=True)
 from bitwarden_client import login_bitwarden
 from botocore.client import Config
 import pytz
+from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 # Carga las variables de entorno desde el archivo .env
 load_dotenv()
@@ -231,6 +233,454 @@ def create_pcloud_folder_if_not_exists(pc, folder_path):
     except Exception as e:
         logging.error(f"{Fore.RED}Error creating folder in pCloud: {e}")
         raise
+
+
+# --------------------------- New Vikunja To-do ------------------------------
+
+def send_request(method, url, headers, data=None):
+    try:
+        if method == "POST":
+            response = requests.post(url, headers=headers, json=data)
+        elif method == "PUT":
+            response = requests.put(url, headers=headers, json=data)
+        elif method == "GET":
+            response = requests.get(url, headers=headers)
+        else:
+            raise ValueError("Unsupported HTTP method")
+
+        # Verificar si la solicitud fue exitosa
+        response.raise_for_status()
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error during request to Vikunja: {e}")
+        if e.response:
+            logging.error(f"Response error: {e.response.text}")
+        return None
+
+
+def add_label_to_task(secrets, task_id, label_id):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+    
+    label_data = {
+        "label_id": label_id
+    }
+
+   
+    label_url = f'{secrets["VIKUNJA_URL"]}/tasks/{task_id}/labels'
+    
+    response = send_request("PUT", label_url, headers, label_data)
+
+    # Aquí cambiamos la validación del código de respuesta
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info(f"Label ID {label_id} successfully added to task ID {task_id}.")
+    else:
+        logging.error(f"Error adding label to task: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+
+
+
+
+
+def create_label_in_vikunja(secrets, label_title="Bitwarden Backup"):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+    
+  
+    label_data = {
+        "title": label_title,
+        "description": "The performed backup is handled by Lazywarden",
+        "hex_color": "#006BFF"  
+    }
+
+    
+    label_url = f'{secrets["VIKUNJA_URL"]}/labels'
+
+   
+    response = send_request("PUT", label_url, headers, label_data)
+
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info(f"Label '{label_title}' successfully created.")
+        return response.json().get("id")  
+    else:
+        logging.error(f"Error creating label: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+        return None
+
+
+
+def get_existing_label_id(secrets, label_title="Bitwarden Backup"):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+
+    
+    labels_url = f'{secrets["VIKUNJA_URL"]}/labels'
+
+    
+    response = send_request("GET", labels_url, headers)
+
+    if response and response.status_code == 200:
+        try:
+            labels = response.json()
+            if not labels:
+                logging.info("No labels found.")
+                return None
+            
+            if not isinstance(labels, list):
+                logging.error("Labels response is not a list. Received: %s", labels)
+                return None
+            
+            # Buscar el label con el título dado
+            for label in labels:
+                if label.get("title") == label_title:
+                    logging.info(f"Label '{label_title}' already exists.")
+                    return label.get("id") 
+        except Exception as e:
+            logging.error(f"Error processing labels: {e}")
+            return None
+    else:
+        logging.error(f"Failed to retrieve labels from Vikunja. Status code: {response.status_code}" if response else "No response from API.")
+        return None
+
+
+
+
+def create_task_in_project(secrets, project_id):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+    
+    now = arrow.utcnow().to(TIMEZONE)
+    timestamp_24h = now.format("YYYY-MM-DD HH:mm:ss")
+    task_name = f"Bitwarden Backup {timestamp_24h}"
+   
+    task_data = {
+        "title": task_name,  
+        "description": "The performed backup is handled by Lazywarden", 
+        "due_date":  "2024-12-31T23:59:59Z",  
+        "priority": 9,  
+        "hex_color": "#006BFF", 
+        "is_done": False,  
+        "is_archived": False 
+    }
+
+   
+    task_url = f'{secrets["VIKUNJA_URL"]}/projects/{project_id}/tasks'
+
+    
+    response = send_request("PUT", task_url, headers, task_data)
+
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info("Task successfully created in the project.")
+        return response.json()
+    else:
+        logging.error(f"Error creating task: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+        return None
+
+
+def create_project_with_put(secrets, project_title="Bitwarden Drive Backup"):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+
+    
+    project_data = {
+        "title": project_title,  
+        "description": "The performed backup is handled by Lazywarden",
+        "hex_color": "#006BFF",  
+        "is_favorite": True,  
+        "is_archived": False  
+    }
+
+  
+    project_url = f'{secrets["VIKUNJA_URL"]}/projects'
+
+    response = send_request("PUT", project_url, headers, project_data)
+    
+    if response and (response.status_code == 200 or response.status_code == 201):
+        logging.info(f"Project '{project_title}' successfully created.")
+        return response.json()["id"]  # Devolver el ID del proyecto creado
+    else:
+        logging.error(f"Error creating project: {response.status_code} - {response.text}" if response else "Could not connect to the API.")
+        return None
+
+def get_existing_project_id(secrets, project_title):
+    headers = {
+        'Authorization': f'Bearer {secrets["VIKUNJA_API_TOKEN"]}',
+        'Content-Type': 'application/json'
+    }
+
+  
+    project_url = f'{secrets["VIKUNJA_URL"]}/projects'
+
+   
+    response = send_request("GET", project_url, headers)
+
+    if response and response.status_code == 200:
+        projects = response.json()
+      
+        for project in projects:
+            if project["title"] == project_title:
+                logging.info(f"Project '{project_title}' already exists.")
+                return project["id"]  # Devolver el ID del proyecto existente
+        return None
+    else:
+        logging.error("Failed to retrieve projects from Vikunja.")
+        return None
+
+
+def create_bitwarden_backup_task_with_label(secrets):
+    logging.info("Starting to create a task and add a label in Vikunja...")
+
+   
+    if all([secrets.get("VIKUNJA_API_TOKEN"), secrets.get("VIKUNJA_URL")]):
+        try:
+           
+            project_title = "Bitwarden Drive Backup"
+            project_id = get_existing_project_id(secrets, project_title)
+
+            if not project_id:
+                logging.info(f"Project '{project_title}' does not exist. Creating it.")
+                project_id = create_project_with_put(secrets, project_title)
+
+            if project_id:
+               
+                task_data = create_task_in_project(secrets, project_id)
+
+                if task_data and "id" in task_data:
+                    task_id = task_data["id"]
+                    logging.info(f"Task created successfully with ID {task_id}.")
+
+                   
+                    label_title = "Bitwarden Backup"
+                    label_id = get_existing_label_id(secrets, label_title)
+
+                    if not label_id:
+                        label_id = create_label_in_vikunja(secrets, label_title)
+
+                   
+                    if label_id:
+                        add_label_to_task(secrets, task_id, label_id)
+
+                    return task_data["title"]
+
+                else:
+                    logging.error("Task creation failed.")
+                    return None
+            else:
+                logging.error("Could not create or find the project.")
+                return None
+
+        except Exception as e:
+            logging.error(f"Error occurred while creating the task or label in Vikunja: {e}")
+            return None
+    else:
+        logging.error("Vikunja API token or URL not set.")
+        return None
+
+
+
+
+
+# ----------------------------------------------------------------------------------------
+
+
+# --------------------------- New S3 Cloudflare R2 ------------------------------
+
+def create_s3_client_r2(access_key_id, secret_access_key, r2_endpoint_url):
+    """
+    Creates and returns an S3-compatible client for Cloudflare R2.
+
+    Args:
+        access_key_id (str): Cloudflare R2 Access Key.
+        secret_access_key (str): Cloudflare R2 Secret Key.
+        r2_endpoint_url (str): Cloudflare R2 endpoint URL.
+
+    Returns:
+        boto3.client: Configured S3 client for Cloudflare R2.
+    """
+    try:
+        return boto3.client(
+            's3',
+            endpoint_url=r2_endpoint_url,
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key,
+            config=Config(signature_version='s3v4'),
+            region_name='auto'
+        )
+    except NoCredentialsError:
+        logging.error("Cloudflare R2 credentials are invalid or missing.")
+    except PartialCredentialsError:
+        logging.error("Cloudflare R2 credentials are incomplete.")
+    except Exception as e:
+        logging.error(f"Error creating S3 client for Cloudflare R2: {e}")
+    return None
+
+def ensure_r2_bucket_exists(s3_client, bucket_name="bitwarden-drive-backup"):
+    """
+    Ensures that the Cloudflare R2 bucket exists, creates it if necessary.
+
+    Args:
+        s3_client (boto3.client): Configured S3 client for Cloudflare R2.
+        bucket_name (str): The target bucket name in Cloudflare R2.
+
+    Returns:
+        bool: True if the bucket exists or is created successfully, False on error.
+    """
+    try:
+        
+        s3_client.create_bucket(Bucket=bucket_name)
+        logging.info(f"Bucket '{bucket_name}' successfully created in Cloudflare R2.")
+    except s3_client.exceptions.BucketAlreadyOwnedByYou:
+        logging.info(f"Bucket '{bucket_name}' already exists and is owned by you.")
+    except s3_client.exceptions.BucketAlreadyExists:
+        logging.info(f"Bucket '{bucket_name}' already exists.")
+    except Exception as e:
+        logging.error(f"Error creating bucket in Cloudflare R2: {e}")
+        return False
+    return True
+
+def upload_file_to_r2(file_path, access_key_id, secret_access_key, r2_endpoint_url):
+    """
+    Uploads the backup ZIP file to the Cloudflare R2 bucket named 'bitwarden-drive-backup'.
+
+    Args:
+        file_path (str): The path to the ZIP file to upload.
+        access_key_id (str): Cloudflare R2 Access Key.
+        secret_access_key (str): Cloudflare R2 Secret Key.
+        r2_endpoint_url (str): Cloudflare R2 endpoint URL.
+
+    Returns:
+        bool: True if the upload was successful, False otherwise.
+    """
+    bucket_name = "bitwarden-drive-backup" 
+    archivo_destino = os.path.basename(file_path)  
+
+   
+    s3_client = create_s3_client_r2(access_key_id, secret_access_key, r2_endpoint_url)
+    if not s3_client:
+        return False  
+
+   
+    if ensure_r2_bucket_exists(s3_client, bucket_name):
+        try:
+            logging.info(f"Uploading file '{file_path}' to bucket '{bucket_name}' in Cloudflare R2...")
+            
+            s3_client.upload_file(file_path, bucket_name, archivo_destino)
+            logging.info(f"File '{file_path}' successfully uploaded to Cloudflare R2.")
+            return True 
+        except Exception as e:
+            logging.error(f"Error uploading file to Cloudflare R2: {e}")
+            return False  
+    else:
+        return False  
+
+# ----------------------------------------------------------------------------
+
+# ---------------------------New S3 Storj------------------------------
+
+def get_storj_client(access_key, secret_key, storj_endpoint):
+    """
+    Creates and returns an S3-compatible client for Storj.
+
+    Args:
+        access_key (str): Storj Access Key.
+        secret_key (str): Storj Secret Key.
+        storj_endpoint (str): Storj API endpoint.
+
+    Returns:
+        boto3.client: Configured S3 client for Storj.
+    """
+    try:
+        return boto3.client(
+            's3',
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            endpoint_url=storj_endpoint
+        )
+    except NoCredentialsError:
+        logging.error("Storj credentials are invalid or missing.")
+    except EndpointConnectionError:
+        logging.error(f"Could not connect to Storj endpoint: {storj_endpoint}.")
+    except Exception as e:
+        logging.error(f"Error setting up the S3 client for Storj: {e}")
+    return None
+
+def ensure_storj_bucket_exists(s3, bucket_name="bitwarden-drive-backup"):
+    """
+    Ensures the Storj bucket exists, creates it if necessary.
+
+    Args:
+        s3 (boto3.client): Configured S3 client for Storj.
+        bucket_name (str): The target bucket name in Storj.
+
+    Returns:
+        bool: True if the bucket exists or is created successfully, False on error.
+    """
+    try:
+      
+        s3.head_bucket(Bucket=bucket_name)
+        logging.info(f"The bucket '{bucket_name}' already exists in Storj.")
+    except ClientError as e:
+       
+        if e.response['Error']['Code'] == '404':
+            logging.info(f"The bucket '{bucket_name}' does not exist. Attempting to create it...")
+            try:
+                s3.create_bucket(Bucket=bucket_name)
+                logging.info(f"Bucket '{bucket_name}' successfully created in Storj.")
+            except ClientError as create_error:
+                logging.error(f"Error trying to create the bucket in Storj: {create_error.response['Error']['Message']}")
+                return False
+        else:
+            logging.error(f"Error checking the bucket in Storj: {e.response['Error']['Message']}")
+            return False
+    return True
+
+def upload_file_to_storj(file_path, access_key, secret_key, storj_endpoint):
+    """
+    Uploads the ZIP file to a Storj bucket named 'bitwarden-drive-backup'.
+
+    Args:
+        file_path (str): The path to the ZIP file to upload.
+        access_key (str): Storj Access Key.
+        secret_key (str): Storj Secret Key.
+        storj_endpoint (str): Storj API endpoint.
+
+    Returns:
+        bool: True if the upload was successful, False otherwise.
+    """
+   
+    bucket_name = "bitwarden-drive-backup"
+
+    s3 = get_storj_client(access_key, secret_key, storj_endpoint)
+    if not s3:
+        return False  
+
+   
+    if ensure_storj_bucket_exists(s3, bucket_name):
+        try:
+            logging.info(f"Uploading file '{file_path}' to bucket '{bucket_name}' in Storj...")
+           
+            s3.upload_file(file_path, bucket_name, os.path.basename(file_path))
+            logging.info(f"File '{file_path}' successfully uploaded to Storj.")
+            return True 
+        except ClientError as e:
+            logging.error(f"Error during the file upload to Storj: {e.response['Error']['Message']}")
+            return False  
+        except Exception as e:
+            logging.error(f"Unexpected error during the upload to Storj: {e}")
+            return False 
+    else:
+        return False 
+
+
+# -----------------------------------------------------------------------------------------------
 
 def upload_file_to_pcloud(file_path, folder_path, pcloud_username, pcloud_password):
     """
@@ -567,6 +1017,9 @@ def backup_bitwarden(env_vars, secrets, drive_service):
         {"description": "Creating Todoist task", "update": 10},
         {"description": "Creating CalDAV event", "update": 10},
         {"description": "Sending email with attachment", "update": 10},
+        {"description": "Uploading to Storj", "update": 10},
+        {"description": "Uploading to Cloudflare R2", "update": 10},
+        {"description": "Creating Vikunja Task", "update": 10},
     ]
 
     with tqdm(total=130, desc=f"{Fore.GREEN}Bitwarden Backup", ncols=100, bar_format="{l_bar}%s{bar}%s{r_bar}" % (Fore.BLUE, Fore.RESET)) as pbar:
@@ -839,6 +1292,106 @@ def backup_bitwarden(env_vars, secrets, drive_service):
         else:
             logging.warning(f"{Fore.YELLOW}SMTP is not configured. Sending emails will be skipped.")
             pbar.update(progress_stages[12]["update"])
+
+
+   #----------------------------------- Upload to Storj -------------------------------------------------------------
+    
+    if all([secrets.get("STORJ_ACCESS_KEY"), secrets.get("STORJ_SECRET_KEY"), secrets.get("STORJ_ENDPOINT")]):
+      try:
+      
+        upload_success = upload_file_to_storj(
+            zip_filepath,
+            access_key=secrets["STORJ_ACCESS_KEY"],
+            secret_key=secrets["STORJ_SECRET_KEY"],
+            storj_endpoint=secrets["STORJ_ENDPOINT"]
+        )
+
+        if upload_success:
+            logging.info("ZIP file uploaded to Storj successfully.")
+            
+            
+            notification_message = "ZIP File Uploaded and Encrypted to Storj Successfully ✅📚🔐☁️"
+            send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
+            send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
+            send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
+
+            
+            pbar.update(progress_stages[10]["update"])
+        else:
+           
+            logging.error("Failed to upload the ZIP file to Storj. No notification will be sent.")
+            
+      except Exception as e:
+      
+        logging.error(f"Error uploading to Storj: {e}")
+    else:
+      logging.warning("Storj is not configured. Uploads to Storj will be skipped.")
+    
+      pbar.update(progress_stages[10]["update"])
+
+
+#------------------------------------------------------------------------------------------------
+
+#----------------------------------- Upload to Cloudflare R2 -------------------------------------------------------------
+
+    if all([secrets.get("R2_ACCESS_KEY_ID"), secrets.get("R2_SECRET_ACCESS_KEY"), secrets.get("R2_ENDPOINT_URL")]):
+      try:
+      
+        upload_success = upload_file_to_r2(
+            zip_filepath,
+            access_key_id=secrets["R2_ACCESS_KEY_ID"],
+            secret_access_key=secrets["R2_SECRET_ACCESS_KEY"],
+            r2_endpoint_url=secrets["R2_ENDPOINT_URL"]
+        )
+
+        if upload_success:
+            logging.info("ZIP file uploaded to Cloudflare R2 successfully.")
+            
+          
+            notification_message = "ZIP File Uploaded and Encrypted to Cloudflare R2 Successfully ✅📚🔐☁️"
+            send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
+            send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
+            send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
+
+            
+            pbar.update(progress_stages[10]["update"])
+        else:
+          
+            logging.error("Failed to upload the ZIP file to Cloudflare R2. No notification will be sent.")
+            
+      except Exception as e:
+       
+        logging.error(f"Error uploading to Cloudflare R2: {e}")
+    else:
+      logging.warning("Cloudflare R2 is not configured. Uploads to Cloudflare R2 will be skipped.")
+  
+      pbar.update(progress_stages[10]["update"])
+
+#---------------------------------Vikunja To-do----------------------------------------------
+    if all([secrets.get("VIKUNJA_API_TOKEN"), secrets.get("VIKUNJA_URL")]):
+       try:
+       
+        task_name = create_bitwarden_backup_task_with_label(secrets)
+
+        if task_name:
+            logging.info(f"Task '{task_name}' Created in Vikunja ☑️📚📁")
+          
+            notification_message = f"Task '{task_name}' Created in Vikunja ☑️📚📁"
+            send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
+            send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
+            send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
+
+            pbar.update(progress_stages[10]["update"])
+        else:
+            logging.error("Failed to create task in Vikunja. No notification will be sent.")
+       except Exception as e:
+        logging.error(f"Error creating the backup task in Vikunja: {e}")
+       else:
+         logging.warning("Vikunja environment variables are not set. The backup process will not be logged in Vikunja.")
+         pbar.update(progress_stages[10]["update"])
+
+#------------------------------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     env_vars = load_environment_variables()

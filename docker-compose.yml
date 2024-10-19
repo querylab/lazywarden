@@ -1,13 +1,14 @@
 services:
   lazywarden:
-    container_name: lazywarden_backup
-    hostname: lazywarden_backup
-    build: .
+    container_name: lazywarden
+    hostname: lazywarden
+    image: querylab/lazywarden:latest
     env_file:
       - .env
     environment:
       UNLOCK_VAULT: "true"
     volumes:
-      - /root/lazywarden/config:/config
+      - /root/lazywarden/config:/root/lazywarden/config
       - /root/lazywarden/backup-drive:/root/lazywarden/backup-drive/
+      - /root/lazywarden/.env:/app/.env
     restart: unless-stopped
