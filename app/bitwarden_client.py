@@ -1,7 +1,6 @@
 import logging
 import shlex
 import pyotp
-import pexpect
 import sys
 import subprocess
 import json
@@ -107,22 +106,26 @@ def login_bitwarden(username, password, totp_secret):
     try:
         #logging.info(f"Attempting to login to Bitwarden with username: {username}")
 
-        command = f"bw login --nointeraction {username} {password}"
+        command = ["bw", "login", "--nointeraction", username, password]
         if totp_secret:
             totp_code = generate_totp(totp_secret)
-            command += f" --method 0 --code {totp_code} 2>&1"
+            command += ["--method", "0", "--code", totp_code]
 
-        logging.info(f"Execute login command: {command}")
+        logging.info(f"Execute login command: {(' '.join(command)).replace(password, '********')}")
 
-        child = pexpect.spawn(command, encoding='utf-8')
-        child.logfile_read = sys.stdout
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
 
-        child.expect(pexpect.EOF)
-        child.close()
+        logging.info(f"Login process stdout:\n{result.stdout}")
+        logging.info(f"Login process stderr:\n{result.stderr}")
+        output = result.stdout + result.stderr
 
-        logging.info(f"Login process output: {child.before}")
-
-        if "You are already logged in as" in child.before or "You are logged in!" in child.before:
+        # Check if login was successful
+        if "You are already logged in as" in output or "You are logged in!" in output:
             logging.info("Bitwarden login successful, attempting to unlock the vault.")
             session_key = unlock_vault(password)
             if session_key:
@@ -130,7 +133,7 @@ def login_bitwarden(username, password, totp_secret):
             else:
                 raise Exception("Failed to unlock the vault after login.")
         else:
-            logging.error(f"Bitwarden login failed: {child.before}")
+            logging.error(f"Bitwarden login failed:\n{output}")
             raise Exception("Failed to login to Bitwarden.")
     except Exception as e:
         logging.error(f"Error during Bitwarden login: {e}")
