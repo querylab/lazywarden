@@ -107,24 +107,17 @@ def login_bitwarden(username, password, totp_secret):
     try:
         #logging.info(f"Attempting to login to Bitwarden with username: {username}")
 
-        command = f"bw login {username} {password}"
+        command = f"bw login --nointeraction {username} {password}"
+        if totp_secret:
+            totp_code = generate_totp(totp_secret)
+            command += f" --method 0 --code {totp_code} 2>&1"
+
+        logging.info(f"Execute login command: {command}")
+
         child = pexpect.spawn(command, encoding='utf-8')
         child.logfile_read = sys.stdout
 
-        if totp_secret:
-            totp_code_sent = False
-            while True:
-                index = child.expect(['Two-step login code', pexpect.EOF, pexpect.TIMEOUT], timeout=30)
-                if index == 0 and not totp_code_sent:
-                    totp_code = generate_totp(totp_secret)
-                    logging.info(f"Using TOTP code: {totp_code}")
-                    child.sendline(totp_code)
-                    totp_code_sent = True
-                elif index in [1, 2]:
-                    break
-        else:
-            child.expect(pexpect.EOF)
-
+        child.expect(pexpect.EOF)
         child.close()
 
         logging.info(f"Login process output: {child.before}")
