@@ -28,7 +28,6 @@ from mega import Mega
 from tqdm import tqdm
 import shlex
 import pyotp
-import pexpect
 import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText

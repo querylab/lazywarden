@@ -13,7 +13,6 @@ mega.py
 tqdm
 pyotp
 telebot
-pexpect
 bitwarden-sdk
 requests
 argon2-cffi
