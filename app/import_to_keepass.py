@@ -405,7 +405,7 @@ def main():
             zf.pwd = ZIP_PASSWORD.encode()
             zf.extractall(temp_dir)
         
-        print(f"Decrypted ZIP contents extracted to temporary directory.")
+        print("Decrypted ZIP contents extracted to temporary directory.")
 
         encrypted_json_file_path = os.path.join(temp_dir, f"bw-backup_{TIMESTAMP}.json")
 

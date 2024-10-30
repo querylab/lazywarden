@@ -371,7 +371,7 @@ def restore_items_and_attachments(env_vars, secrets, bw_session, sleep_milliseco
             if result.returncode != 0:
                 logging.error(f"Error during import: {result.stderr}")
                 raise subprocess.CalledProcessError(result.returncode, result.args, result.stdout, result.stderr)
-            logging.info(f"Backup imported to Bitwarden successfully")
+            logging.info("Backup imported to Bitwarden successfully")
         except subprocess.CalledProcessError as e:
             logging.error(f"Error during import: {e}. Trying to unlock the vault again.")
             bw_session = unlock_vault(secrets["BW_PASSWORD"])
@@ -380,9 +380,9 @@ def restore_items_and_attachments(env_vars, secrets, bw_session, sleep_milliseco
                 if result.returncode != 0:
                     logging.error(f"Error during import after unlocking the vault: {result.stderr}")
                     raise subprocess.CalledProcessError(result.returncode, result.args, result.stdout, result.stderr)
-                logging.info(f"Backup imported to Bitwarden successfully after unlocking the vault")
+                logging.info("Backup imported to Bitwarden successfully after unlocking the vault")
 
-        logging.info(f"Restoring items finished")
+        logging.info("Restoring items finished")
 
         for _ in tqdm(range(100), desc=f"{Fore.GREEN}Bitwarden JSON Import{Fore.RESET}", ncols=100, bar_format="{l_bar}%s{bar}%s{r_bar}" % (Fore.BLUE, Fore.RESET)):
             time.sleep(0.01)
@@ -392,7 +392,7 @@ def restore_items_and_attachments(env_vars, secrets, bw_session, sleep_milliseco
 
         bitwarden_items = list_bitwarden_items(bw_session)
         if not bitwarden_items:
-            logging.error(f"Failed to retrieve Bitwarden items. Cannot proceed with attachment.")
+            logging.error("Failed to retrieve Bitwarden items. Cannot proceed with attachment.")
             return
 
         attach_files_using_info(attachments_info_file_path, decrypted_attachments_dir_path, bitwarden_items, bw_session, secrets["BW_PASSWORD"])
