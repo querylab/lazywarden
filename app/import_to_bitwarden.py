@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from bitwarden_client import BitwardenClient, client_settings_from_dict, DeviceType, login_bitwarden, unlock_vault
 from secrets_manager import retrieve_secrets
 from config import configure_logging
+import sys
 from tqdm import tqdm
 from colorama import init, Fore
 from terminaltexteffects.effects import effect_rain, effect_beams, effect_wipe, effect_matrix
@@ -507,7 +508,7 @@ if __name__ == "__main__":
         bw_session = login_bitwarden(secrets["BW_USERNAME"], secrets["BW_PASSWORD"], secrets["BW_TOTP_SECRET"])
         if bw_session is None:
             logging.error("Failed to obtain Bitwarden session")
-            exit(1)
+            sys.exit(1)
 
     except Exception as e:
         logging.error(f"Error authenticating to Bitwarden: {e}")
