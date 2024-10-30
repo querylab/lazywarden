@@ -10,7 +10,6 @@ from argon2.low_level import hash_secret_raw, Type
 from dotenv import load_dotenv
 from secrets_manager import retrieve_secrets
 from bitwarden_client import BitwardenClient, client_settings_from_dict
-import time
 from terminaltexteffects.effects import effect_rain, effect_beams, effect_decrypt, effect_matrix
 
 ##-------------Interactive-------------

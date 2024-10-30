@@ -9,7 +9,6 @@ from secrets_manager import retrieve_secrets
 from config import configure_logging
 from tqdm import tqdm
 from colorama import init, Fore
-import time
 from terminaltexteffects.effects import effect_rain, effect_beams, effect_wipe, effect_matrix
 
 # Initialize colorama

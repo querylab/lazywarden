@@ -19,7 +19,7 @@ from bitwarden_client import login_bitwarden
 from botocore.client import Config
 import pytz
 from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+from botocore.exceptions import PartialCredentialsError
 
 # Carga las variables de entorno desde el archivo .env
 load_dotenv()

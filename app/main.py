@@ -4,7 +4,6 @@ from bitwarden_client import setup_bitwarden_client, authenticate_bitwarden_clie
 from secrets_manager import retrieve_secrets
 from backup import backup_bitwarden
 from colorama import init, Fore, Style  # Importar colorama
-import time
 from terminaltexteffects.effects import effect_rain, effect_beams
 
 def clear_screen():

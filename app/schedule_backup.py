@@ -11,7 +11,6 @@ from caldav import DAVClient, Calendar, Event
 from icalendar import Calendar as iCalendar, Event as iEvent
 from terminaltexteffects.effects import effect_rain, effect_beams, effect_wipe
 import time
-import os
 import sys
 
 # Load environment variables from .env file
