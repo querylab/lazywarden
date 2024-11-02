@@ -10,7 +10,6 @@ from argon2.low_level import hash_secret_raw, Type
 from dotenv import load_dotenv
 from secrets_manager import retrieve_secrets
 from bitwarden_client import BitwardenClient, client_settings_from_dict
-import time
 from terminaltexteffects.effects import effect_rain, effect_beams, effect_decrypt, effect_matrix
 
 ##-------------Interactive-------------
@@ -406,7 +405,7 @@ def main():
             zf.pwd = ZIP_PASSWORD.encode()
             zf.extractall(temp_dir)
         
-        print(f"Decrypted ZIP contents extracted to temporary directory.")
+        print("Decrypted ZIP contents extracted to temporary directory.")
 
         encrypted_json_file_path = os.path.join(temp_dir, f"bw-backup_{TIMESTAMP}.json")
 

@@ -19,7 +19,7 @@ from bitwarden_client import login_bitwarden
 from botocore.client import Config
 import pytz
 from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+from botocore.exceptions import PartialCredentialsError
 
 # Carga las variables de entorno desde el archivo .env
 load_dotenv()
@@ -1106,7 +1106,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
                 with open(zip_filepath, "rb") as f:
                     dbx.files_upload(f.read(), f"{folder_path}/bw-backup_{timestamp}.zip")
                 logging.info(f"{Fore.GREEN}ZIP file uploaded to Dropbox")
-                notification_message = f"ZIP File Uploaded and Encrypted to Dropbox Successfully ✅📚🔐☁️"
+                notification_message = "ZIP File Uploaded and Encrypted to Dropbox Successfully ✅📚🔐☁️"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1123,7 +1123,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
                 backup_folder_id = create_folder_if_not_exists(drive_service, "bitwarden-drive-backup", parent_folder_id=env_vars["GOOGLE_FOLDER_ID"])
                 upload_file_to_drive(drive_service, zip_filepath, backup_folder_id)
                 logging.info(f"{Fore.GREEN}ZIP file uploaded to Google Drive")
-                notification_message = f"ZIP File Uploaded and Encrypted to Google Drive Successfully ✅📚🔐☁️"
+                notification_message = "ZIP File Uploaded and Encrypted to Google Drive Successfully ✅📚🔐☁️"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1139,7 +1139,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
             try:
                 upload_file_to_pcloud(zip_filepath, "bitwarden-drive-backup", secrets["PCLOUD_USERNAME"], secrets["PCLOUD_PASSWORD"])
                 logging.info(f"{Fore.GREEN}ZIP file uploaded to pCloud")
-                notification_message = f"ZIP File Uploaded and Encrypted to pCloud Successfully ✅📚🔐☁️"
+                notification_message = "ZIP File Uploaded and Encrypted to pCloud Successfully ✅📚🔐☁️"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1155,7 +1155,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
             try:
                 upload_file_to_mega(zip_filepath, secrets["MEGA_EMAIL"], secrets["MEGA_PASSWORD"])
                 logging.info(f"{Fore.GREEN}ZIP file uploaded to Mega")
-                notification_message = f"ZIP File Uploaded and Encrypted to Mega Successfully ✅📚🔐☁️"
+                notification_message = "ZIP File Uploaded and Encrypted to Mega Successfully ✅📚🔐☁️"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1171,7 +1171,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
             try:
                 upload_file_to_nextcloud(zip_filepath, secrets["NEXTCLOUD_URL"], secrets["NEXTCLOUD_USERNAME"], secrets["NEXTCLOUD_PASSWORD"])
                 logging.info(f"{Fore.GREEN}ZIP file uploaded to Nextcloud")
-                notification_message = f"ZIP File Uploaded and Encrypted to Nextcloud Successfully ✅📚🔐☁️"
+                notification_message = "ZIP File Uploaded and Encrypted to Nextcloud Successfully ✅📚🔐☁️"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1187,7 +1187,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
             try:
                 upload_file_to_seafile(zip_filepath, secrets["SEAFILE_SERVER_URL"], secrets["SEAFILE_USERNAME"], secrets["SEAFILE_PASSWORD"])
                 logging.info(f"{Fore.GREEN}ZIP file uploaded to Seafile")
-                notification_message = f"ZIP File Uploaded and Encrypted to Seafile Successfully ✅📚🔐☁️"
+                notification_message = "ZIP File Uploaded and Encrypted to Seafile Successfully ✅📚🔐☁️"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1203,7 +1203,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
             try:
                 upload_file_to_filebase(zip_filepath, secrets["FILEBASE_ACCESS_KEY"], secrets["FILEBASE_SECRET_KEY"], f"bw-backup_{timestamp}.zip")
                 logging.info(f"{Fore.GREEN}ZIP file uploaded to Filebase")
-                notification_message = f"ZIP File Uploaded and Encrypted to Filebase Successfully ✅📚🔐☁️"
+                notification_message = "ZIP File Uploaded and Encrypted to Filebase Successfully ✅📚🔐☁️"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1241,7 +1241,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
                     pbar.update(progress_stages[10]["update"])
                 else:
                     logging.error(f"{Fore.RED}Failed to create Todoist task")
-                    notification_message = f"Failed to create Todoist task"
+                    notification_message = "Failed to create Todoist task"
             except Exception as e:
                 logging.error(f"{Fore.RED}Error creating Todoist task: {e}")
                 notification_message = f"Error creating Todoist task: {e}"
@@ -1263,7 +1263,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
                     caldav_username=secrets["CALDAV_USERNAME"],
                     caldav_password=secrets["CALDAV_PASSWORD"]
                 )
-                notification_message = f"CalDAV Event Successfully Created on Bitwarden New Backup Calendar ✅📅"
+                notification_message = "CalDAV Event Successfully Created on Bitwarden New Backup Calendar ✅📅"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])
@@ -1281,7 +1281,7 @@ def backup_bitwarden(env_vars, secrets, drive_service):
                 send_email_with_attachment(env_vars["SMTP_SERVER"], env_vars["SMTP_PORT"], env_vars["SMTP_USERNAME"], env_vars["SMTP_PASSWORD"], env_vars["SENDER_EMAIL"], env_vars["EMAIL_RECIPIENT"], 
                                         "Bitwarden Backup", f"", zip_filepath)
                 logging.info(f"{Fore.GREEN}Email with attachment sent successfully")
-                notification_message = f"ZIP File Sent and Encrypted to Email Successfully ✅📚🔐📧"
+                notification_message = "ZIP File Sent and Encrypted to Email Successfully ✅📚🔐📧"
                 send_telegram_notification(notification_message, env_vars["TELEGRAM_TOKEN"], env_vars["TELEGRAM_CHAT_ID"])
                 send_discord_notification(notification_message, env_vars["DISCORD_WEBHOOK_URL"])
                 send_slack_notification(notification_message, env_vars["SLACK_WEBHOOK_URL"])

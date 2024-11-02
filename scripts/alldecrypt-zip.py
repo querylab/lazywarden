@@ -11,7 +11,6 @@ from uuid import UUID
 from argon2.low_level import hash_secret_raw, Type
 from colorama import init, Fore, Style
 from tqdm import tqdm
-import time
 from terminaltexteffects.effects import effect_rain, effect_beams, effect_decrypt, effect_matrix
 
 # Initialize colorama
