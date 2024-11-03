@@ -25,7 +25,7 @@ def setup_bitwarden_client(api_url, identity_url):
 
 def authenticate_bitwarden_client(bw_client, access_token):
     try:
-        # Cambiar al nuevo método de autenticación
+       
         auth_client = bw_client.auth()
         auth_client.login_access_token(access_token)
         logging.info("Authenticated successfully using access token.")
@@ -44,9 +44,9 @@ def get_secret(bw_client, secret_id):
         logging.error(f"Error retrieving secret {secret_id}: {e}")
         raise
 
-def check_logged_in(bw_password):
+def check_logged_in(password):
     try:
-        command = shlex.split(f"bw unlock --raw {bw_password}")
+        command = shlex.split(f"bw unlock --raw {password}")
         session_key_result = subprocess.run(command, capture_output=True, text=True)
         if session_key_result.returncode == 0:
             logging.info("User is already logged in and vault is unlocked.")
@@ -73,7 +73,10 @@ def is_vault_unlocked():
         return False
 
 def generate_totp(secret):
-    secret = secret.replace(" ", "").strip()  # Remove spaces and any trailing whitespace
+    if not secret:
+        raise ValueError("TOTP secret is empty or not set.")
+    
+    secret = secret.replace(" ", "").strip()  
     try:
         totp = pyotp.TOTP(secret)
         totp_code = totp.now()
@@ -97,19 +100,24 @@ def unlock_vault(password):
     except subprocess.CalledProcessError as e:
         logging.error(f"Error unlocking the vault: {e.stderr}")
         return None
+    
 
-def login_bitwarden(username, password, totp_secret):
+def login_bitwarden(username, password, totp_secret=None):
     session_key = check_logged_in(password)
     if session_key:
         return session_key
 
     try:
-        #logging.info(f"Attempting to login to Bitwarden with username: {username}")
-
         command = ["bw", "login", "--nointeraction", username, password]
+        
+       
         if totp_secret:
-            totp_code = generate_totp(totp_secret)
-            command += ["--method", "0", "--code", totp_code]
+            try:
+                totp_code = generate_totp(totp_secret)
+                command += ["--method", "0", "--code", totp_code]
+            except Exception as e:
+                logging.error(f"Error generating TOTP code: {e}")
+                totp_code = None  
 
         logging.info(f"Execute login command: {(' '.join(command)).replace(password, '********')}")
 
@@ -124,7 +132,7 @@ def login_bitwarden(username, password, totp_secret):
         logging.info(f"Login process stderr:\n{result.stderr}")
         output = result.stdout + result.stderr
 
-        # Check if login was successful
+        # Verifica si el inicio de sesión fue exitoso
         if "You are already logged in as" in output or "You are logged in!" in output:
             logging.info("Bitwarden login successful, attempting to unlock the vault.")
             session_key = unlock_vault(password)
@@ -138,6 +146,7 @@ def login_bitwarden(username, password, totp_secret):
     except Exception as e:
         logging.error(f"Error during Bitwarden login: {e}")
         raise
+
 
 def logout_bitwarden():
     """

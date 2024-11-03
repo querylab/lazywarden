@@ -28,3 +28,4 @@ pykeepass
 terminaltexteffects
 tenacity==9.0.0
 pycryptodome
+b2sdk

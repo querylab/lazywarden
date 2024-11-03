@@ -218,3 +218,31 @@ def send_email_with_attachment(smtp_server, smtp_port, smtp_username, smtp_passw
         logging.error(f"SMTP error: {e}")
     except Exception as e:
         logging.error(f"Error sending email: {e}")
+
+#----------------------New Ntfy notification -------------------------------------
+
+def send_ntfy_notification(message, ntfy_url):
+    """
+    Sends a notification to ntfy.
+
+    Args:
+        message (str): Message to send.
+        ntfy_url (str): ntfy server or channel URL.
+
+    Raises:
+        Exception: If an error occurs while sending the message.
+    """
+    ntfy_url = os.getenv("NTFY_URL")
+    if not ntfy_url:
+        logging.warning("ntfy is not configured. Notifications to ntfy will be skipped.")
+        return
+    try:
+       
+        response = requests.post(ntfy_url, data=message, headers={"Content-Type": "text/plain"}, timeout=10)
+        
+        if response.status_code == 200:
+            logging.info("Notification sent to ntfy")
+        else:
+            logging.error(f"Error sending notification to ntfy: Status code {response.status_code}")
+    except Exception as e:
+        logging.error(f"Error sending notification to ntfy: {e}")

@@ -11,7 +11,7 @@ def load_environment_variables():
     optional_vars = [
         "TELEGRAM_TOKEN", "TELEGRAM_CHAT_ID", "DISCORD_WEBHOOK_URL", "SLACK_WEBHOOK_URL",
         "GOOGLE_SERVICE_ACCOUNT_FILE", "GOOGLE_FOLDER_ID", "SMTP_SERVER",
-        "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD", "EMAIL_RECIPIENT", "SENDER_EMAIL"
+        "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD", "EMAIL_RECIPIENT", "SENDER_EMAIL","NTFY_URL"
     ]
     env_vars = {var: os.getenv(var) for var in required_vars + optional_vars}
     

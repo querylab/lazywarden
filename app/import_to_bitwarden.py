@@ -505,7 +505,7 @@ if __name__ == "__main__":
 
         secrets = retrieve_secrets(bw_client)
 
-        bw_session = login_bitwarden(secrets["BW_USERNAME"], secrets["BW_PASSWORD"], secrets["BW_TOTP_SECRET"])
+        bw_session = login_bitwarden(secrets["BW_USERNAME"], secrets["BW_PASSWORD"], secrets.get("BW_TOTP_SECRET"))
         if bw_session is None:
             logging.error("Failed to obtain Bitwarden session")
             sys.exit(1)
