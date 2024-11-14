@@ -305,7 +305,7 @@ python3 main.py
 ``` PYTHON
 
 lazywarden/
-├── app/                           # This directory appears to contain the main application code
+├── app/                           # This directory to contain the main application code
 │   ├── backup.py                  # Backup functions
 │   ├── bitwarden_client.py        # Client to interact with Bitwarden
 │   ├── config.py                  # General application configurations
@@ -387,7 +387,7 @@ docker compose up -d
 ##### **Important Note**
 
 - Large attachments in your Bitwarden account (e.g., MP4 videos, MP3 files, high-resolution photos) may cause the backup process to take longer. Uploading these larger backups to cloud services will also be slower. Local storage and importing data are much faster in comparison.
-- A high number of attachments can significantly extend the total backup time. Upload errors may occur when sending files to Dropbox, Google Drive, pCloud, MEGA, Seafile, Nextcloud, Storj, Cloudflare R2, or Filebase. If an error occurs, retrying the backup often resolves the issue.
+- A high number of attachments can significantly extend the total backup time. Upload errors may occur when sending files to Dropbox, Google Drive, pCloud, MEGA, Seafile, Nextcloud, Storj, Cloudflare R2, Backblaze B2, or Filebase. If an error occurs, retrying the backup often resolves the issue.
 - Configuring the Bitwarden Secret Manager is required for the program to function correctly. Even if you don't have an account, you must set a random variable to ensure proper operation.
 - This program is compatible with both self-hosted Bitwarden and Vaultwarden instances.
 - Import functionality for Vaultwarden and self-hosted Bitwarden is not yet implemented in the Bitwarden API.
@@ -401,7 +401,7 @@ docker compose up -d
 
 ### <span style="display: inline-flex; align-items: center;"> <img src="https://user-images.githubusercontent.com/74038190/216122069-5b8169d7-1d8e-4a13-b245-a8e4176c99f8.png" width="30" style="vertical-align: middle; margin-right: 10px;"> Motivations </span>
 
-- I created Lazywarden to Automate Bitwarden Backups without manual effort or exposing sensitive data. After struggling with complex tools, I leveraged Bitwarden Secret Manager to securely manage secrets. Lazywarden automates backups and uploads them to multiple cloud services (Google Drive, Dropbox, pCloud, MEGA, Seafile, Nextcloud, Filebase, Storj, Cloudflare R2), and integrates with Telegram, Discord, Slack, Todoist, Vikunja, and CalDAV for notifications and tracking. Its standout feature is the ability to restore encrypted backups back into Bitwarden, making backup management simple, secure, and efficient.
+- I created Lazywarden to Automate Bitwarden Backups without manual effort or exposing sensitive data. After struggling with complex tools, I leveraged Bitwarden Secret Manager to securely manage secrets. Lazywarden automates backups and uploads them to multiple cloud services (Google Drive, Dropbox, pCloud, MEGA, Seafile, Nextcloud, Filebase, Storj, Cloudflare R2, Backblaze B2), and integrates with Telegram, Discord, Ntfy, Slack, Todoist, Vikunja, and CalDAV for notifications and tracking. Its standout feature is the ability to restore encrypted backups back into Bitwarden, making backup management simple, secure, and efficient.
 
 - If you like this project, please consider giving it a ⭐
 
