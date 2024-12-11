@@ -162,7 +162,12 @@ def create_folder_if_not_exists(drive_service, folder_name, parent_folder_id=Non
     query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder'"
     if parent_folder_id:
         query += f" and '{parent_folder_id}' in parents"
-    results = drive_service.files().list(q=query, fields="files(id, name)").execute()
+    results = drive_service.files().list(
+        q=query,
+        includeItemsFromAllDrives=True,
+        supportsAllDrives=True,
+        fields="files(id, name)"
+    ).execute()
     items = results.get('files', [])
     if not items:
         folder_metadata = {
@@ -173,6 +178,7 @@ def create_folder_if_not_exists(drive_service, folder_name, parent_folder_id=Non
         try:
             created_folder = drive_service.files().create(
                 body=folder_metadata,
+                supportsAllDrives=True,
                 fields='id'
             ).execute()
             logging.info(f"{Fore.GREEN}Created Folder ID: {created_folder['id']}")
@@ -202,7 +208,12 @@ def upload_file_to_drive(drive_service, file_path, folder_id):
     }
     media = MediaFileUpload(file_path, resumable=True)
     try:
-        file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            supportsAllDrives=True,
+            fields='id'
+        ).execute()
         logging.info(f"{Fore.GREEN}File ID: {file.get('id')}")
     except Exception as e:
         logging.error(f"{Fore.RED}Error uploading file to Drive: {e}")
