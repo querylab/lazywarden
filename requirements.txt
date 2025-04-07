@@ -26,6 +26,6 @@ boto3
 pytz
 pykeepass
 terminaltexteffects
-tenacity==9.0.0
+tenacity==9.1.2
 pycryptodome
 b2sdk
