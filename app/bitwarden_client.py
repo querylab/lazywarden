@@ -1,10 +1,15 @@
 import logging
+import os
 import shlex
 import pyotp
 import sys
 import subprocess
 import json
 from bitwarden_sdk import BitwardenClient, DeviceType, client_settings_from_dict
+
+# Environment variable name used to pass the master password to the bw CLI
+# securely, avoiding exposure via /proc/PID/cmdline or process listings.
+_BW_PASSWORD_ENV = "BW_PASSWORD"
 
 def setup_bitwarden_client(api_url, identity_url):
     try:
@@ -46,8 +51,10 @@ def get_secret(bw_client, secret_id):
 
 def check_logged_in(password):
     try:
-        command = shlex.split(f"bw unlock --raw {password}")
-        session_key_result = subprocess.run(command, capture_output=True, text=True)
+        env = os.environ.copy()
+        env[_BW_PASSWORD_ENV] = password
+        command = ["bw", "unlock", "--raw", "--passwordenv", _BW_PASSWORD_ENV]
+        session_key_result = subprocess.run(command, capture_output=True, text=True, env=env)
         if session_key_result.returncode == 0:
             logging.info("User is already logged in and vault is unlocked.")
             return session_key_result.stdout.strip()
@@ -89,8 +96,10 @@ def generate_totp(secret):
 def unlock_vault(password):
     try:
         logging.info("Unlocking the Bitwarden vault.")
-        command = shlex.split(f"bw unlock --raw {password}")
-        session_key_result = subprocess.run(command, capture_output=True, text=True)
+        env = os.environ.copy()
+        env[_BW_PASSWORD_ENV] = password
+        command = ["bw", "unlock", "--raw", "--passwordenv", _BW_PASSWORD_ENV]
+        session_key_result = subprocess.run(command, capture_output=True, text=True, env=env)
         if session_key_result.returncode == 0:
             logging.info("Vault unlocked successfully.")
             return session_key_result.stdout.strip()
@@ -108,24 +117,27 @@ def login_bitwarden(username, password, totp_secret=None):
         return session_key
 
     try:
-        command = ["bw", "login", "--nointeraction", username, password]
-        
-       
+        env = os.environ.copy()
+        env[_BW_PASSWORD_ENV] = password
+        command = ["bw", "login", "--nointeraction", username, "--passwordenv", _BW_PASSWORD_ENV]
+
+
         if totp_secret:
             try:
                 totp_code = generate_totp(totp_secret)
                 command += ["--method", "0", "--code", totp_code]
             except Exception as e:
                 logging.error(f"Error generating TOTP code: {e}")
-                totp_code = None  
+                totp_code = None
 
-        logging.info(f"Execute login command: {(' '.join(command)).replace(password, '********')}")
+        logging.info(f"Execute login command: {' '.join(command)}")
 
         result = subprocess.run(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            env=env
         )
 
         logging.info(f"Login process stdout:\n{result.stdout}")
