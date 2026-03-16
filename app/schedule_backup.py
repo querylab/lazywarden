@@ -160,7 +160,7 @@ def send_email_notification(smtp_server, smtp_port, smtp_username, smtp_password
     logging.info(f"SMTP_SERVER: {smtp_server}")
     logging.info(f"SMTP_PORT: {smtp_port}")
     logging.info(f"SMTP_USERNAME: {smtp_username}")
-    logging.info(f"SMTP_PASSWORD: {smtp_password}")
+    logging.info("SMTP_PASSWORD: ********")
     logging.info(f"SENDER_EMAIL: {sender}")
     logging.info(f"RECEIVER_EMAIL: {recipient}")
 
