@@ -2,7 +2,7 @@ services:
   lazywarden:
     container_name: lazywarden
     hostname: lazywarden
-    image: querylab/lazywarden:latest
+    image: ${LAZYWARDEN_IMAGE:-querylab/lazywarden:latest}
     env_file:
       - .env
     environment:

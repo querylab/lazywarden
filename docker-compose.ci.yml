@@ -1,0 +1,8 @@
+services:
+  lazywarden:
+    container_name: lazywarden-startup-test
+    volumes:
+      - ./config:/root/lazywarden/config
+      - ./backup-drive:/root/lazywarden/backup-drive/
+      - ./.env:/app/.env
+    restart: "no"

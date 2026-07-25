@@ -1,19 +1,62 @@
 name: Build and Push Docker Image
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Build Docker image for startup test
+        uses: docker/build-push-action@v6
+        with:
+          load: true
+          tags: lazywarden-startup-test:${{ github.sha }}
+
+      - name: Run Docker Compose startup test
+        env:
+          COMPOSE_PROJECT_NAME: lazywarden-startup-${{ github.run_id }}
+          LAZYWARDEN_IMAGE: lazywarden-startup-test:${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d lazywarden
+
+          for attempt in {1..12}; do
+            if docker compose -f docker-compose.yml -f docker-compose.ci.yml ps --status running --services | grep -qx lazywarden; then
+              sleep 10
+              if docker compose -f docker-compose.yml -f docker-compose.ci.yml ps --status running --services | grep -qx lazywarden; then
+                exit 0
+              fi
+            fi
+
+            docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
+            docker compose -f docker-compose.yml -f docker-compose.ci.yml logs --tail=100 lazywarden || true
+            sleep 5
+          done
+
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml logs --tail=200 lazywarden || true
+          exit 1
+
+      - name: Stop Docker Compose startup test
+        if: always()
+        env:
+          COMPOSE_PROJECT_NAME: lazywarden-startup-${{ github.run_id }}
+          LAZYWARDEN_IMAGE: lazywarden-startup-test:${{ github.sha }}
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v --remove-orphans
+
       - name: Log in to ghcr.io
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -21,12 +64,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to docker.io
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
           push: true
